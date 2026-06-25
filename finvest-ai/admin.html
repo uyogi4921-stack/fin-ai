@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Finvest AI — Admin Panel</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #060912; --bg2: #0d1221; --bg3: #151c2f;
+    --tx: #f0f4ff; --mu: #6b7a99; --br: rgba(255,255,255,.06);
+    --gr: #00e5a0; --rd: #ff4d6a; --bl: #4d9fff; --gd: #ffb547;
+    --pu: #9b6dff; --or: #ff7b3a;
+    --fh: 'Syne', sans-serif; --fb: 'DM Sans', sans-serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--tx); font-family:var(--fb); min-height:100vh; }
+
+  /* Login */
+  .login-wrap { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; }
+  .login-box { background:var(--bg2); border:1px solid var(--br); border-radius:20px; padding:40px; max-width:400px; width:100%; text-align:center; }
+  .login-logo { font-size:32px; margin-bottom:8px; }
+  .login-title { font-family:var(--fh); font-size:24px; font-weight:800; margin-bottom:4px; }
+  .login-sub { font-size:13px; color:var(--mu); margin-bottom:24px; }
+  .login-inp { width:100%; background:var(--bg3); border:1px solid var(--br); border-radius:10px; padding:12px 16px; color:var(--tx); font-family:var(--fb); font-size:14px; outline:none; margin-bottom:12px; }
+  .login-inp:focus { border-color:var(--gr); }
+  .login-btn { width:100%; padding:13px; border:none; border-radius:10px; background:linear-gradient(135deg,var(--gr),#00a87a); color:#060912; font-family:var(--fh); font-size:14px; font-weight:700; cursor:pointer; transition:all .2s; }
+  .login-btn:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,229,160,.3); }
+  .login-err { color:var(--rd); font-size:12px; margin-top:8px; display:none; }
+
+  /* Admin Layout */
+  .admin { display:none; }
+  .admin.on { display:block; }
+  .admin-nav { background:var(--bg2); border-bottom:1px solid var(--br); padding:12px 24px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
+  .admin-logo { font-family:var(--fh); font-size:18px; font-weight:800; display:flex; align-items:center; gap:8px; }
+  .admin-logo span { color:var(--gr); }
+  .admin-badge { background:rgba(255,77,106,.15); color:var(--rd); padding:3px 10px; border-radius:20px; font-size:10px; font-weight:700; letter-spacing:0.5px; }
+  .admin-logout { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); color:var(--tx); padding:7px 16px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; transition:all .2s; }
+  .admin-logout:hover { background:rgba(255,77,106,.15); border-color:var(--rd); color:var(--rd); }
+
+  .admin-body { padding:24px; max-width:1400px; margin:0 auto; }
+
+  /* Stats Cards */
+  .stats-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:28px; }
+  .stat-card { background:var(--bg2); border:1px solid var(--br); border-radius:14px; padding:20px; }
+  .stat-lbl { font-size:11px; color:var(--mu); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }
+  .stat-val { font-family:var(--fh); font-size:28px; font-weight:800; }
+  .stat-sub { font-size:11px; color:var(--mu); margin-top:4px; }
+  .stat-val.green { color:var(--gr); }
+  .stat-val.blue { color:var(--bl); }
+  .stat-val.gold { color:var(--gd); }
+  .stat-val.purple { color:var(--pu); }
+
+  /* Section */
+  .sec-hd { font-family:var(--fh); font-size:16px; font-weight:700; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+  .sec-badge { background:rgba(77,159,255,.12); color:var(--bl); padding:2px 8px; border-radius:10px; font-size:10px; font-weight:600; }
+
+  /* Search */
+  .search-bar { background:var(--bg2); border:1px solid var(--br); border-radius:10px; padding:10px 14px; display:flex; align-items:center; gap:8px; margin-bottom:16px; }
+  .search-inp { background:none; border:none; color:var(--tx); font-family:var(--fb); font-size:13px; outline:none; flex:1; }
+
+  /* User Table */
+  .user-table { background:var(--bg2); border:1px solid var(--br); border-radius:14px; overflow:hidden; margin-bottom:28px; }
+  .ut-head { display:grid; grid-template-columns:40px 2fr 1fr 1fr 1fr 1fr 1fr 80px; padding:12px 16px; background:var(--bg3); font-size:10px; font-weight:600; color:var(--mu); text-transform:uppercase; letter-spacing:0.5px; gap:8px; align-items:center; }
+  .ut-row { display:grid; grid-template-columns:40px 2fr 1fr 1fr 1fr 1fr 1fr 80px; padding:12px 16px; border-top:1px solid var(--br); font-size:12px; gap:8px; align-items:center; transition:background .2s; cursor:pointer; }
+  .ut-row:hover { background:rgba(255,255,255,.03); }
+  .ut-av { font-size:22px; text-align:center; }
+  .ut-name { font-weight:600; }
+  .ut-name small { display:block; color:var(--mu); font-size:10px; font-weight:400; }
+  .ut-xp { color:var(--gd); font-weight:600; }
+  .ut-level { color:var(--pu); font-size:11px; }
+  .ut-port { font-weight:600; }
+  .ut-active { font-size:10px; color:var(--mu); }
+  .ut-active.recent { color:var(--gr); }
+  .ut-del { background:rgba(255,77,106,.1); border:1px solid rgba(255,77,106,.2); color:var(--rd); padding:4px 10px; border-radius:6px; font-size:10px; font-weight:600; cursor:pointer; transition:all .2s; }
+  .ut-del:hover { background:rgba(255,77,106,.25); }
+
+  /* User Detail Modal */
+  .ud-ov { position:fixed; inset:0; background:rgba(0,0,0,.8); z-index:200; display:none; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(8px); }
+  .ud-ov.on { display:flex; }
+  .ud-box { background:var(--bg2); border:1px solid var(--br); border-radius:18px; max-width:600px; width:100%; max-height:85vh; overflow-y:auto; }
+  .ud-hd { padding:24px; border-bottom:1px solid var(--br); display:flex; align-items:center; gap:14px; }
+  .ud-av { font-size:42px; }
+  .ud-name { font-family:var(--fh); font-size:20px; font-weight:800; }
+  .ud-meta { font-size:11px; color:var(--mu); }
+  .ud-close { position:absolute; right:16px; top:16px; background:none; border:none; color:var(--mu); font-size:18px; cursor:pointer; }
+  .ud-body { padding:20px 24px; }
+  .ud-stat-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:18px; }
+  .ud-stat { background:var(--bg3); border-radius:10px; padding:12px; text-align:center; }
+  .ud-stat-v { font-family:var(--fh); font-size:18px; font-weight:700; }
+  .ud-stat-l { font-size:10px; color:var(--mu); margin-top:2px; }
+  .ud-sec { font-size:12px; font-weight:600; color:var(--mu); text-transform:uppercase; letter-spacing:0.5px; margin:14px 0 8px; }
+  .ud-hold { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--br); font-size:12px; }
+  .ud-trade { display:flex; gap:10px; padding:8px 0; border-bottom:1px solid var(--br); font-size:12px; align-items:center; }
+  .ud-trade-icon { font-size:14px; }
+  .ud-info-row { display:flex; justify-content:space-between; padding:6px 0; font-size:11px; }
+  .ud-info-row span:first-child { color:var(--mu); }
+
+  /* No Users */
+  .no-users { text-align:center; padding:48px 20px; color:var(--mu); }
+  .no-users-icon { font-size:48px; margin-bottom:12px; opacity:.5; }
+
+  /* Responsive */
+  @media (max-width:900px) {
+    .ut-head, .ut-row { grid-template-columns:40px 2fr 1fr 1fr 80px; }
+    .ut-head > *:nth-child(5), .ut-head > *:nth-child(6),
+    .ut-row > *:nth-child(5), .ut-row > *:nth-child(6) { display:none; }
+  }
+  @media (max-width:600px) {
+    .stats-grid { grid-template-columns:repeat(2, 1fr); }
+    .ut-head, .ut-row { grid-template-columns:40px 1.5fr 1fr 80px; }
+    .ut-head > *:nth-child(4), .ut-head > *:nth-child(5), .ut-head > *:nth-child(6),
+    .ut-row > *:nth-child(4), .ut-row > *:nth-child(5), .ut-row > *:nth-child(6) { display:none; }
+    .admin-body { padding:14px; }
+    .ud-stat-grid { grid-template-columns:repeat(2, 1fr); }
+  }
+
+  /* Refresh button */
+  .refresh-btn { background:rgba(77,159,255,.1); border:1px solid rgba(77,159,255,.2); color:var(--bl); padding:6px 14px; border-radius:8px; font-size:11px; font-weight:600; cursor:pointer; transition:all .2s; }
+  .refresh-btn:hover { background:rgba(77,159,255,.2); }
+
+  /* Toast */
+  .admin-toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--bg3); border:1px solid var(--br); color:var(--tx); padding:10px 20px; border-radius:10px; font-size:13px; transition:transform .3s; z-index:999; }
+  .admin-toast.on { transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-box">
+    <div class="login-logo">&#128274;</div>
+    <div class="login-title">Admin Panel</div>
+    <div class="login-sub">Finvest AI — Host Controls</div>
+    <input type="password" class="login-inp" id="adminPass" placeholder="Enter admin password"
+      onkeydown="if(event.key==='Enter')adminLogin()">
+    <button class="login-btn" onclick="adminLogin()">Login</button>
+    <div class="login-err" id="loginErr">Invalid password. Try again.</div>
+  </div>
+</div>
+
+<!-- ADMIN DASHBOARD -->
+<div class="admin" id="adminPanel">
+  <nav class="admin-nav">
+    <div class="admin-logo">
+      &#128200; Finvest<span> AI</span> <span class="admin-badge">ADMIN</span>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="refresh-btn" onclick="loadDashboard()">&#8635; Refresh</button>
+      <button class="admin-logout" onclick="adminLogout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="admin-body">
+    <!-- Stats Overview -->
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card">
+        <div class="stat-lbl">Total Users</div>
+        <div class="stat-val green" id="sTotalUsers">0</div>
+        <div class="stat-sub">Registered accounts</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-lbl">Active Today</div>
+        <div class="stat-val blue" id="sActiveToday">0</div>
+        <div class="stat-sub">Last 24 hours</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-lbl">Total XP Earned</div>
+        <div class="stat-val gold" id="sTotalXP">0</div>
+        <div class="stat-sub">Across all users</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-lbl">Total Trades</div>
+        <div class="stat-val purple" id="sTotalTrades">0</div>
+        <div class="stat-sub">Buy + Sell orders</div>
+      </div>
+    </div>
+
+    <!-- Users List -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div class="sec-hd" style="margin:0">&#128101; All Users <span class="sec-badge" id="userCount">0</span></div>
+    </div>
+
+    <div class="search-bar">
+      <span style="opacity:.5">&#128269;</span>
+      <input type="text" class="search-inp" id="userSearch" placeholder="Search users by name, goal, or level..." oninput="filterUsers()">
+    </div>
+
+    <div class="user-table" id="userTable">
+      <div class="ut-head">
+        <div></div>
+        <div>User</div>
+        <div>XP</div>
+        <div>Level</div>
+        <div>Portfolio</div>
+        <div>Trades</div>
+        <div>Last Active</div>
+        <div>Action</div>
+      </div>
+      <div id="userList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- USER DETAIL MODAL -->
+<div class="ud-ov" id="udOv" onclick="if(event.target===this)closeUserDetail()">
+  <div class="ud-box">
+    <div class="ud-hd" style="position:relative">
+      <div class="ud-av" id="udAv"></div>
+      <div>
+        <div class="ud-name" id="udName"></div>
+        <div class="ud-meta" id="udMeta"></div>
+      </div>
+      <button class="ud-close" onclick="closeUserDetail()">&#10005;</button>
+    </div>
+    <div class="ud-body" id="udBody"></div>
+  </div>
+</div>
+
+<div class="admin-toast" id="aToast"></div>
+
+<script>
+var adminToken = '';
+var allUsers = [];
+
+function showToast(msg) {
+  var t = document.getElementById('aToast');
+  t.textContent = msg;
+  t.classList.add('on');
+  setTimeout(function() { t.classList.remove('on'); }, 2500);
+}
+
+function fINR(n) { return '\u20B9' + Math.round(n).toLocaleString('en-IN'); }
+
+function timeAgo(ts) {
+  var diff = Date.now() - ts;
+  var mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return mins + 'm ago';
+  var hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + 'h ago';
+  var days = Math.floor(hrs / 24);
+  if (days < 30) return days + 'd ago';
+  return Math.floor(days / 30) + 'mo ago';
+}
+
+// ─── LOGIN ─────────────────────────────────────────────
+function adminLogin() {
+  var pass = document.getElementById('adminPass').value;
+  fetch('/api/admin/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: pass })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.success) {
+      adminToken = data.token;
+      sessionStorage.setItem('adminToken', adminToken);
+      document.getElementById('loginWrap').style.display = 'none';
+      document.getElementById('adminPanel').classList.add('on');
+      loadDashboard();
+    } else {
+      document.getElementById('loginErr').style.display = 'block';
+    }
+  })
+  .catch(function() {
+    document.getElementById('loginErr').textContent = 'Server not reachable. Run: npm start';
+    document.getElementById('loginErr').style.display = 'block';
+  });
+}
+
+function adminLogout() {
+  adminToken = '';
+  sessionStorage.removeItem('adminToken');
+  document.getElementById('adminPanel').classList.remove('on');
+  document.getElementById('loginWrap').style.display = 'flex';
+  document.getElementById('adminPass').value = '';
+}
+
+// ─── LOAD DASHBOARD ────────────────────────────────────
+function loadDashboard() {
+  fetch('/api/admin/users', {
+    headers: { 'Authorization': adminToken }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.error) { adminLogout(); return; }
+    allUsers = data.users || [];
+
+    document.getElementById('sTotalUsers').textContent = data.summary.totalUsers;
+    document.getElementById('sActiveToday').textContent = data.summary.activeToday;
+    document.getElementById('sTotalXP').textContent = data.summary.totalXP.toLocaleString();
+    document.getElementById('sTotalTrades').textContent = data.summary.totalTrades;
+    document.getElementById('userCount').textContent = data.summary.totalUsers;
+
+    renderUserList(allUsers);
+    showToast('Dashboard refreshed');
+  })
+  .catch(function(err) {
+    console.error('Failed to load:', err);
+  });
+}
+
+// ─── RENDER USERS ──────────────────────────────────────
+function renderUserList(users) {
+  var el = document.getElementById('userList');
+  if (!users.length) {
+    el.innerHTML = '<div class="no-users"><div class="no-users-icon">&#128100;</div><div>No users yet</div><div style="font-size:12px;margin-top:4px">Users will appear here when they visit the app</div></div>';
+    return;
+  }
+
+  el.innerHTML = users.map(function(u, i) {
+    var isRecent = (Date.now() - (u.lastActive || 0)) < 86400000;
+    return '<div class="ut-row" onclick="openUserDetail(\'' + u.id + '\')">'
+      + '<div class="ut-av">' + (u.profile.avatar || '&#128100;') + '</div>'
+      + '<div class="ut-name">' + u.profile.name + '<small>' + (u.profile.goal || 'No goal set') + '</small></div>'
+      + '<div class="ut-xp">' + (u.stats.xp || 0) + ' XP</div>'
+      + '<div class="ut-level">' + (u.stats.level || 'Level 1') + '</div>'
+      + '<div class="ut-port">' + fINR(u.stats.portfolioValue || 0) + '</div>'
+      + '<div>' + (u.stats.totalTrades || 0) + '</div>'
+      + '<div class="ut-active ' + (isRecent ? 'recent' : '') + '">' + timeAgo(u.lastActive || u.profile.createdAt) + '</div>'
+      + '<div><button class="ut-del" onclick="event.stopPropagation();deleteUser(\'' + u.id + '\',\'' + u.profile.name + '\')">Delete</button></div>'
+      + '</div>';
+  }).join('');
+}
+
+function filterUsers() {
+  var q = document.getElementById('userSearch').value.toLowerCase();
+  if (!q) { renderUserList(allUsers); return; }
+  var filtered = allUsers.filter(function(u) {
+    return (u.profile.name || '').toLowerCase().includes(q)
+      || (u.profile.goal || '').toLowerCase().includes(q)
+      || (u.stats.level || '').toLowerCase().includes(q);
+  });
+  renderUserList(filtered);
+}
+
+// ─── USER DETAIL ───────────────────────────────────────
+function openUserDetail(id) {
+  var user = allUsers.find(function(u) { return u.id === id; });
+  if (!user) return;
+
+  document.getElementById('udAv').textContent = user.profile.avatar || '?';
+  document.getElementById('udName').textContent = user.profile.name;
+  document.getElementById('udMeta').textContent = (user.profile.goal || '') + ' \u00B7 Risk: ' + (user.profile.risk || 'moderate') + ' \u00B7 Joined: ' + new Date(user.profile.createdAt).toLocaleDateString('en-IN');
+
+  var body = document.getElementById('udBody');
+  var s = user.stats;
+
+  var html = '<div class="ud-stat-grid">'
+    + '<div class="ud-stat"><div class="ud-stat-v" style="color:var(--gd)">' + (s.xp || 0) + '</div><div class="ud-stat-l">XP Points</div></div>'
+    + '<div class="ud-stat"><div class="ud-stat-v" style="color:var(--pu)">' + (s.level || 'Lv 1') + '</div><div class="ud-stat-l">Level</div></div>'
+    + '<div class="ud-stat"><div class="ud-stat-v" style="color:var(--or)">' + (s.streak || 0) + '</div><div class="ud-stat-l">Day Streak</div></div>'
+    + '<div class="ud-stat"><div class="ud-stat-v" style="color:var(--bl)">' + (s.lessonsCompleted || 0) + '/15</div><div class="ud-stat-l">Lessons</div></div>'
+    + '<div class="ud-stat"><div class="ud-stat-v" style="color:var(--gr)">' + fINR(s.portfolioValue || 0) + '</div><div class="ud-stat-l">Portfolio</div></div>'
+    + '<div class="ud-stat"><div class="ud-stat-v">' + fINR(s.walletBalance || 0) + '</div><div class="ud-stat-l">Wallet</div></div>'
+    + '</div>';
+
+  // Info
+  html += '<div class="ud-sec">User Info</div>';
+  html += '<div class="ud-info-row"><span>User ID</span><span style="font-family:monospace;font-size:10px">' + user.id + '</span></div>';
+  html += '<div class="ud-info-row"><span>Last Active</span><span>' + timeAgo(user.lastActive) + '</span></div>';
+  html += '<div class="ud-info-row"><span>IP Address</span><span>' + (user.lastIP || 'Unknown') + '</span></div>';
+  html += '<div class="ud-info-row"><span>Browser</span><span style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (user.userAgent || 'Unknown') + '</span></div>';
+
+  // Holdings
+  if (user.holdings && user.holdings.length) {
+    html += '<div class="ud-sec">Holdings (' + user.holdings.length + ' stocks)</div>';
+    user.holdings.forEach(function(h) {
+      html += '<div class="ud-hold"><span>' + h.sym + '</span><span>' + h.qty + ' shares @ ' + fINR(h.avgPrice) + '</span></div>';
+    });
+  }
+
+  // Trades
+  if (user.recentTrades && user.recentTrades.length) {
+    html += '<div class="ud-sec">Recent Trades (' + user.recentTrades.length + ')</div>';
+    user.recentTrades.slice(0, 10).forEach(function(t) {
+      var isBuy = t.type === 'buy';
+      html += '<div class="ud-trade">'
+        + '<div class="ud-trade-icon">' + (isBuy ? '&#128994;' : '&#128308;') + '</div>'
+        + '<div style="flex:1"><b>' + (isBuy ? 'Bought' : 'Sold') + ' ' + t.qty + ' ' + t.sym + '</b><br><span style="color:var(--mu);font-size:10px">' + fINR(t.total) + ' \u00B7 ' + timeAgo(t.time) + '</span></div>'
+        + '</div>';
+    });
+  }
+
+  body.innerHTML = html;
+  document.getElementById('udOv').classList.add('on');
+}
+
+function closeUserDetail() {
+  document.getElementById('udOv').classList.remove('on');
+}
+
+// ─── DELETE USER ───────────────────────────────────────
+function deleteUser(id, name) {
+  if (!confirm('Delete user "' + name + '"? This cannot be undone.')) return;
+  fetch('/api/admin/users/' + id, {
+    method: 'DELETE',
+    headers: { 'Authorization': adminToken }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.success) {
+      showToast('User "' + name + '" deleted');
+      loadDashboard();
+    }
+  });
+}
+
+// ─── AUTO LOGIN FROM SESSION ───────────────────────────
+(function() {
+  var saved = sessionStorage.getItem('adminToken');
+  if (saved) {
+    adminToken = saved;
+    document.getElementById('loginWrap').style.display = 'none';
+    document.getElementById('adminPanel').classList.add('on');
+    loadDashboard();
+  }
+})();
+</script>
+</body>
+</html>

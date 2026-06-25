@@ -1,0 +1,23 @@
+{
+  "name": "finvest-ai",
+  "version": "2.0.0",
+  "description": "Finvest AI - Gamified Investing Platform for Gen Z with Admin Panel",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "npx nodemon server.js",
+    "static": "npx serve . -p 3000"
+  },
+  "keywords": ["fintech", "investing", "gamification", "india", "NSE", "stocks"],
+  "author": "Umesh Yogi",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
